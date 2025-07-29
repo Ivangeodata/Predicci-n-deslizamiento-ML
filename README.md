@@ -5,6 +5,8 @@ Este proyecto implementa una **API REST con FastAPI** para predecir la *suscepti
 
 La solución fue desarrollada en el contexto de una *hackathon de inteligencia artificial* orientada a la mitigación del riesgo por deslizamientos en la zona cafetera de Colombia.
 
+URL: "https://web-production-8a55.up.railway.app/docs#/default/predecir_predict_post"
+
 ---
 
 ## 📌 Objetivo
