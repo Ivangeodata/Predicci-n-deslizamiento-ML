@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 # --- Inicializar FastAPI ---
-app = FastAPI(title="API CNN Deslizamientos", version="1.0")
+app = FastAPI(title="API CNN Deslizamientos", version="1.1")
 
 # --- Cargar modelo CNN ---
 try:
@@ -26,16 +26,20 @@ def inicio():
 @app.post("/predict")
 def predecir(entrada: CuboEntrada):
     try:
-        cubo = np.array(entrada.data)
+        cubo = np.array(entrada.data, dtype=np.float32)
 
-        # Verificación estricta de forma
+        # Validación de forma
         if cubo.shape != (13, 13, 7):
             raise HTTPException(status_code=422, detail=f"❌ Cubo debe tener forma (13, 13, 7). Recibido: {cubo.shape}")
 
-        # Redimensionar para batch (1, 13, 13, 7)
+        # Validación de valores válidos (no NaN ni inf)
+        if not np.isfinite(cubo).all():
+            raise HTTPException(status_code=422, detail="❌ El cubo contiene valores NaN o Inf.")
+
+        # Redimensionar para predicción batch
         cubo = cubo.reshape(1, 13, 13, 7)
 
-        # Realizar predicción
+        # Predicción
         resultado = model.predict(cubo, verbose=0)
         probabilidad = float(resultado[0][0])
         prediccion = int(probabilidad > 0.5)
@@ -46,5 +50,7 @@ def predecir(entrada: CuboEntrada):
             "clase": "Deslizamiento" if prediccion == 1 else "No deslizamiento"
         }
 
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"❌ Error interno en la predicción: {str(e)}")
